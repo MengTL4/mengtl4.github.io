@@ -391,6 +391,9 @@
         <hr class="clearfix">
 
         
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.min.css">
+        
 
         
 
@@ -425,7 +428,19 @@
 </tbody></table>
 <p>Active Directory 以分层树结构排列，顶部的林包含一个或多个域，这些域本身可以具有嵌套的子域。林是所有对象都处于管理控制之下的安全边界。一个林可能包含多个域，一个域可能包含其他子域或子域。域是可在其中访问包含的对象（用户、计算机和组）的结构。它具有许多内置的组织单位 （OU），例如 <code>Domain Controllers</code> 、 <code>Users</code> ， <code>Computers</code> 并且可以根据需要创建新的 OU。OU 可能包含对象和子 OU，允许分配不同的组策略。</p>
 <p>一个非常简单的AD域结构如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">INLANEFREIGHT.LOCAL/</span><br><span class="line">├── ADMIN.INLANEFREIGHT.LOCAL</span><br><span class="line">│   ├── GPOs</span><br><span class="line">│   └── OU</span><br><span class="line">│       └── EMPLOYEES</span><br><span class="line">│           ├── COMPUTERS</span><br><span class="line">│           │   └── FILE01</span><br><span class="line">│           ├── GROUPS</span><br><span class="line">│           │   └── HQ Staff</span><br><span class="line">│           └── USERS</span><br><span class="line">│               └── barbara.jones</span><br><span class="line">├── CORP.INLANEFREIGHT.LOCAL</span><br><span class="line">└── DEV.INLANEFREIGHT.LOCAL</span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">INLANEFREIGHT.LOCAL/
+├── ADMIN.INLANEFREIGHT.LOCAL
+│   ├── GPOs
+│   └── OU
+│       └── EMPLOYEES
+│           ├── COMPUTERS
+│           │   └── FILE01
+│           ├── <span class="token environment constant">GROUPS</span>
+│           │   └── HQ Staff
+│           └── USERS
+│               └── barbara.jones
+├── CORP.INLANEFREIGHT.LOCAL
+└── DEV.INLANEFREIGHT.LOCAL<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>在这里，我们可以说这是 <code>INLANEFREIGHT.LOCAL</code> 根域，包含子域（子域或树根域） <code>ADMIN.INLANEFREIGHT.LOCAL</code> ，以及 <code>DEV.INLANEFREIGHT.LOCAL</code> 构成域的其他对象，例如用户，组，计算机等， <code>CORP.INLANEFREIGHT.LOCAL</code> 我们将在下面详细介绍。在大型组织中，通常会看到多个域（或林）通过信任关系链接在一起。与在当前域中重新创建所有新用户相比，与另一个域&#x2F;林创建信任关系通常更快、更容易。如果管理不当，域信任可能会引入一系列安全问题。</p>
 <p><img src="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/20230919200213.png"></p>
@@ -447,7 +462,7 @@
 <p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Security_Account_Manager">Security Account Manager - Wikipedia</a></p>
 <p>安全主体是操作系统可以进行身份验证的任何内容，包括用户、计算机帐户，甚至是在用户或计算机帐户上下文中运行的线程&#x2F;进程（即在域中的服务帐户上下文中运行的应用程序，如 Tomcat）。在 AD 中，安全原则是可以管理对域中其他资源的访问的域对象。我们还可以使用本地用户帐户和安全组来控制对该特定计算机上资源的访问。这些不是由 AD 管理，而是由安全帐户管理器 （SAM） 管理。</p>
 <h3 id="2-2-11-Security-Identifier-SID-安全标识符-SID"><a href="#2-2-11-Security-Identifier-SID-安全标识符-SID" class="headerlink" title="2.2.11 Security Identifier (SID)(安全标识符(SID))"></a>2.2.11 Security Identifier (SID)(安全标识符(SID))</h3><p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-principals">Security principals | Microsoft Learn</a></p>
-<p>[LDAPWiki: Well-known Security Identifiers](<a target="_blank" rel="noopener" href="https://ldapwiki.com/wiki/Wiki.jsp?page=Well-known">https://ldapwiki.com/wiki/Wiki.jsp?page=Well-known</a> Security Identifiers)</p>
+<p>[LDAPWiki：Well-known Security Identifiers](<a target="_blank" rel="noopener" href="https://ldapwiki.com/wiki/Wiki.jsp?page=Well-known">https://ldapwiki.com/wiki/Wiki.jsp?page=Well-known</a> Security Identifiers)</p>
 <p>安全标识符或 SID 用作安全主体或安全组的唯一标识符。每个帐户、组或进程都有自己唯一的 SID，在 AD 环境中，该 SID 由域控制器颁发并存储在安全数据库中。一个 SID 只能使用一次。即使删除了安全原则，也永远无法在该环境中再次使用它来标识其他用户或组。当用户登录时，系统会为他们创建一个访问令牌，其中包含用户的 SID、已授予的权限以及用户所属的任何组的 SID。每当用户在计算机上执行操作时，此令牌用于检查权限。还有一些用于标识通用用户和组的已知 SID。这些在所有操作系统中都是相同的。 一个例子是<code>Everyone</code>组。</p>
 <h3 id="2-2-12-Distinguished-Name-DN"><a href="#2-2-12-Distinguished-Name-DN" class="headerlink" title="2.2.12 Distinguished Name (DN)"></a>2.2.12 Distinguished Name (DN)</h3><p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ldap/distinguished-names">Distinguished Names | Microsoft Learn</a></p>
 <p>Distinguished Name描述 AD 中对象的完整路径（例如 <code>cn=bjones, ou=IT, ou=Employees, dc=inlanefreight, dc=local</code> ）。在此示例中，用户 <code>bjones</code> 在 Inlanefreight 公司的 IT 部门工作，他的帐户是在持有公司员工帐户的组织单位 （OU） 中创建的。公用名 （CN） <code>bjones</code> 只是在域中搜索或访问用户对象的一种方法。</p>
@@ -692,6 +707,9 @@
 <!-- 代码块功能依赖 -->
 <script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
 
+
+  <!-- 是否加载使用自带的 prismjs. -->
+  <script type="text/javascript" src="/libs/prism/prism.min.js"></script>
 
 
 <!-- 代码语言 -->
