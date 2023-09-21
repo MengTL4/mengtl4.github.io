@@ -340,8 +340,8 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h1><p>笔者在今年暑假闲暇之余写了一个通过DNS透明代理绕过某猫的VPN&#x2F;代理检测的方案，此方案对于网络环境要求较高，无法在校园网+宿舍路由器的大内网+小内网内运行。今天在先知看到一篇师傅发的APP检测对抗的文章，获得启发，于是就有了这篇文章。</p>
-<h1 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h1><p>下图是软件检测到手机开了代理或者VPN，会自动退出软件</p>
+                <h2 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h2><p>笔者在今年暑假闲暇之余写了一个通过DNS透明代理绕过某猫的VPN&#x2F;代理检测的方案，此方案对于网络环境要求较高，无法在校园网+宿舍路由器的大内网+小内网内运行。今天在先知看到一篇师傅发的APP检测对抗的文章，获得启发，于是就有了这篇文章。</p>
+<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>下图是软件检测到手机开了代理或者VPN，会自动退出软件</p>
 <img src="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/Screenshot_2023-09-21-21-45-52-409_com.miui.home-.jpg" alt="Screenshot_2023-09-21-21-45-52-409_com.miui.home-" style="zoom: 50%;" />
 
 <p>先上师傅的文章</p>
@@ -367,7 +367,7 @@ iptables -t nat -D OUTPUT -p tcp --dport 443 -j DNAT --to 192.168.31.170:8080<sp
 
 <p>附上过滤脚本和app请求的加解密脚本</p>
 <p>注意：过滤脚本仅提供思路，可定制化程度极高，包括但不限于路线偏移，随机参数生成，去广告等(有时间会补上)</p>
-<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><h2 id="rsautils-py"><a href="#rsautils-py" class="headerlink" title="rsautils.py"></a>rsautils.py</h2><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> base64
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><h3 id="rsautils-py"><a href="#rsautils-py" class="headerlink" title="rsautils.py"></a>rsautils.py</h3><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> base64
 <span class="token keyword">from</span> Crypto <span class="token keyword">import</span> Random
 <span class="token keyword">from</span> Crypto<span class="token punctuation">.</span>Cipher <span class="token keyword">import</span> PKCS1_v1_5 <span class="token keyword">as</span> Cipher_pkcs1_v1_5
 <span class="token keyword">from</span> Crypto<span class="token punctuation">.</span>PublicKey <span class="token keyword">import</span> RSA
@@ -455,7 +455,7 @@ iptables -t nat -D OUTPUT -p tcp --dport 443 -j DNAT --to 192.168.31.170:8080<sp
         <span class="token keyword">return</span> <span class="token string">b''</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">'utf8'</span><span class="token punctuation">)</span>
 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h2 id="mitmproxyserver-py"><a href="#mitmproxyserver-py" class="headerlink" title="mitmproxyserver.py"></a>mitmproxyserver.py</h2><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> json
+<h3 id="mitmproxyserver-py"><a href="#mitmproxyserver-py" class="headerlink" title="mitmproxyserver.py"></a>mitmproxyserver.py</h3><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> json
 
 <span class="token keyword">from</span> mitmproxy <span class="token keyword">import</span> http<span class="token punctuation">,</span> ctx
 
@@ -541,7 +541,7 @@ addons <span class="token operator">=</span> <span class="token punctuation">[</
     Counter<span class="token punctuation">(</span><span class="token punctuation">)</span>
 <span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h2 id="randompoint-py"><a href="#randompoint-py" class="headerlink" title="randompoint.py"></a>randompoint.py</h2><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> random
+<h3 id="randompoint-py"><a href="#randompoint-py" class="headerlink" title="randompoint.py"></a>randompoint.py</h3><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> random
 <span class="token keyword">from</span> haversine <span class="token keyword">import</span> haversine<span class="token punctuation">,</span> Unit
 
 
