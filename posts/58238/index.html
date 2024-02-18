@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="起因笔者在今年暑假闲暇之余写了一个通过DNS透明代理绕过某猫的VPN&#x2F;代理检测的方案，此方案对于网络环境要求较高，无法在校园网+宿舍路由器的大内网+小内网内运行。今天在先知看到一篇师傅发的APP检测对抗的文章，获得启发，于是就有了这篇文章。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="某猫校园代理检测绕过与劫持">
+<meta property="og:url" content="http://example.com/posts/58238/index.html">
+<meta property="og:site_name" content="MengTL&#39;s blog">
+<meta property="og:description" content="起因笔者在今年暑假闲暇之余写了一个通过DNS透明代理绕过某猫的VPN&#x2F;代理检测的方案，此方案对于网络环境要求较高，无法在校园网+宿舍路由器的大内网+小内网内运行。今天在先知看到一篇师傅发的APP检测对抗的文章，获得启发，于是就有了这篇文章。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/image.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/image-20230921213219416.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/image-20230921220004616.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/image-20230921220115556.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/IMG_20230921_220200.jpg">
+<meta property="article:published_time" content="2023-09-21T13:21:32.000Z">
+<meta property="article:modified_time" content="2024-02-18T12:34:00.822Z">
+<meta property="article:author" content="MengTL">
+<meta property="article:tag" content="透明代理">
+<meta property="article:tag" content="APP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/image.jpg">
+
+<link rel="canonical" href="http://example.com/posts/58238/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>某猫校园代理检测绕过与劫持 | MengTL's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">MengTL's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/posts/58238/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="MengTL">
+      <meta itemprop="description" content="总有人间一两风，填我十万八千梦">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="MengTL's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          某猫校园代理检测绕过与劫持
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-21 21:21:32" itemprop="dateCreated datePublished" datetime="2023-09-21T21:21:32+08:00">2023-09-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-18 20:34:00" itemprop="dateModified" datetime="2024-02-18T20:34:00+08:00">2024-02-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/APP/" itemprop="url" rel="index"><span itemprop="name">APP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h2><p>笔者在今年暑假闲暇之余写了一个通过DNS透明代理绕过某猫的VPN&#x2F;代理检测的方案，此方案对于网络环境要求较高，无法在校园网+宿舍路由器的大内网+小内网内运行。今天在先知看到一篇师傅发的APP检测对抗的文章，获得启发，于是就有了这篇文章。</p>
+<span id="more"></span>
+
+<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>下图是软件检测到手机开了代理或者VPN，会自动退出软件</p>
+<p><img src="/image.jpg"></p>
+<p>先上师傅的文章</p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/11398">浅析APP代理检测对抗 - 先知社区 (aliyun.com)</a></p>
+<p><img src="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/image-20230921213219416.png" alt="image-20230921213219416"></p>
+<p>文章中指出了iptables和透明代理的原理，我们根据文章指引，可以通过iptables设置转发，并通过mitmproxy进行中间人劫持</p>
+<p>先adb连接手机(注意，电脑和手机需要在同一个局域网，并且是<code>相同的网络环境</code>)</p>
+<p>mitproxy开启在本地的8080端口，当然也可以写脚本过滤请求</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">su</span><br><span class="line">iptables -t nat -A OUTPUT -p tcp --dport 80 -j DNAT --to  192.168.31.170:8080</span><br><span class="line">iptables -t nat -A OUTPUT -p tcp --dport 443 -j DNAT --to  192.168.31.170:8080</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/image-20230921220004616.png" alt="image-20230921220004616"></p>
+<p>附上删除规则的命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -D OUTPUT -p tcp --dport 80 -j DNAT --to 192.168.31.170:8080</span><br><span class="line">iptables -t nat -D OUTPUT -p tcp --dport 443 -j DNAT --to 192.168.31.170:8080</span><br></pre></td></tr></table></figure>
+
+<p>启动mitmproxy，流量正常</p>
+<p><img src="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/image-20230921220115556.png" alt="image-20230921220115556"></p>
+<p>APP成功劫持</p>
+<img src="https://raw.githubusercontent.com/MengTL4/ImgStg/main/image/IMG_20230921_220200.jpg" alt="IMG_20230921_220200" style="zoom: 25%;" />
+
+<p>附上过滤脚本和app请求的加解密脚本</p>
+<p>注意：过滤脚本仅提供思路，可定制化程度极高，包括但不限于路线偏移，随机参数生成，去广告等(有时间会补上)</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><h3 id="rsautils-py"><a href="#rsautils-py" class="headerlink" title="rsautils.py"></a>rsautils.py</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> Crypto <span class="keyword">import</span> Random</span><br><span class="line"><span class="keyword">from</span> Crypto.Cipher <span class="keyword">import</span> PKCS1_v1_5 <span class="keyword">as</span> Cipher_pkcs1_v1_5</span><br><span class="line"><span class="keyword">from</span> Crypto.PublicKey <span class="keyword">import</span> RSA</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RsaUtils</span>:</span><br><span class="line">    rsa_private_key = <span class="string">&quot;&quot;&quot;-----BEGIN RSA PRIVATE KEY-----</span></span><br><span class="line"><span class="string">    MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBANT+P5zkV2QTCFIg</span></span><br><span class="line"><span class="string">    X2ObD7TnSI3T/J+OGT/rr1HIWIbnC7QB2mTc1HYiRujaUD6tMEkHHVukZUYK8wop</span></span><br><span class="line"><span class="string">    D+mWM1RKYm0lozmJ440WtkPpGFJRuOs0Q0fz0qz0YZaL7V2Q591Ic26NCKUXmgs4</span></span><br><span class="line"><span class="string">    gd7PUdibCaUAMDb1THjJvx7j4+0tAgMBAAECgYEAnqMvZf98R4EVdXW/FkTrkeWh</span></span><br><span class="line"><span class="string">    WGFHit8fV0iHL/Z0WSXExbGLpAwGAmbNQak4kzYS/JFcAGGVPHHzSuIChAvm9ciE</span></span><br><span class="line"><span class="string">    WlUst5BGc7kO3gJs67zS7+nIkOHhr+oFvHcxy6J4yg1HoOftqcAL4soyI7E6knoh</span></span><br><span class="line"><span class="string">    1zX+mcZNIrduZHD6IoECQQD2qwgD6kiiynr3jaqSE2TIuRlwrBD3Xuslbd1UMam0</span></span><br><span class="line"><span class="string">    BIeeDJWGHlGnkIvveZ2uMjG7dRta6GOEgrAESg5NPKx1AkEA3Q0TujLihvwu+Drg</span></span><br><span class="line"><span class="string">    SEGLU21iziPsms4Ush5268ImLEoK2HuKwj1JcWRhx1au1DnK48DWTT7ZLxblTI18</span></span><br><span class="line"><span class="string">    AF8G2QJBALx+rCxZv1HvSxKbhmoEOfMNR7yLMJfoR+cdUpIBNX6kK4KCeUy5JIrY</span></span><br><span class="line"><span class="string">    8aZ5mB5CqzBl6BaLGWlseNd+Q/mP0PUCQFmKeYo8IHyTXKdamg1K15gkwBhGfwo6</span></span><br><span class="line"><span class="string">    HjIEmyFm1LWuDHSinpON5dkT03O+zjTTcDcPnv9NTQaBHMMEsM0psQkCQQCZ9znK</span></span><br><span class="line"><span class="string">    9fLouRHaWb7HqR3nldeUYoA3NuL+69Q1FOBeoIy5zoU6UDkqxK+uoA2rnZa+5If4</span></span><br><span class="line"><span class="string">    d2cAmn4N+8uqjvjA</span></span><br><span class="line"><span class="string">    -----END RSA PRIVATE KEY-----&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    rsa_public_key = <span class="string">&quot;&quot;&quot;-----BEGIN PUBLIC KEY-----</span></span><br><span class="line"><span class="string">    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDU/j+c5FdkEwhSIF9jmw+050iN</span></span><br><span class="line"><span class="string">    0/yfjhk/669RyFiG5wu0Adpk3NR2Ikbo2lA+rTBJBx1bpGVGCvMKKQ/pljNUSmJt</span></span><br><span class="line"><span class="string">    JaM5ieONFrZD6RhSUbjrNENH89Ks9GGWi+1dkOfdSHNujQilF5oLOIHez1HYmwml</span></span><br><span class="line"><span class="string">    ADA29Ux4yb8e4+PtLQIDAQAB</span></span><br><span class="line"><span class="string">    -----END PUBLIC KEY-----</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">encrypt</span>(<span class="params">self, msg</span>):</span><br><span class="line">        msg = msg.encode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">        rsakey = RSA.importKey(self.rsa_public_key)</span><br><span class="line">        cipher = Cipher_pkcs1_v1_5.new(rsakey)</span><br><span class="line">        cipher_text = base64.b64encode(cipher.encrypt(msg))</span><br><span class="line">        <span class="keyword">return</span> cipher_text</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">decrypt</span>(<span class="params">self, cipher_text</span>):</span><br><span class="line">        rsakey = RSA.importKey(self.rsa_private_key)</span><br><span class="line">        cipher = Cipher_pkcs1_v1_5.new(rsakey)</span><br><span class="line">        random_generator = Random.new().read</span><br><span class="line">        text = cipher.decrypt(base64.b64decode(cipher_text), random_generator)</span><br><span class="line">        <span class="keyword">return</span> text.decode(<span class="string">&#x27;utf8&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">long_encrypt</span>(<span class="params">self, msg</span>):</span><br><span class="line">        msg = msg.encode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">        length = <span class="built_in">len</span>(msg)</span><br><span class="line">        default_length = <span class="number">117</span></span><br><span class="line">        <span class="comment"># 公钥加密</span></span><br><span class="line">        pubobj = Cipher_pkcs1_v1_5.new(RSA.importKey(self.rsa_public_key))</span><br><span class="line">        <span class="comment"># 长度不用分段</span></span><br><span class="line">        <span class="keyword">if</span> length &lt; default_length:</span><br><span class="line">            <span class="keyword">return</span> base64.b64encode(pubobj.encrypt(msg))</span><br><span class="line">        <span class="comment"># 需要分段</span></span><br><span class="line">        offset = <span class="number">0</span></span><br><span class="line">        res = []</span><br><span class="line">        <span class="keyword">while</span> length - offset &gt; <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">if</span> length - offset &gt; default_length:</span><br><span class="line">                res.append(pubobj.encrypt(msg[offset:offset + default_length]))</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                res.append(pubobj.encrypt(msg[offset:]))</span><br><span class="line">            offset += default_length</span><br><span class="line">        byte_data = <span class="string">b&#x27;&#x27;</span>.join(res)</span><br><span class="line">        <span class="keyword">return</span> base64.b64encode(byte_data)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">long_decrypt</span>(<span class="params">self, msg</span>):</span><br><span class="line">        msg = base64.b64decode(msg)</span><br><span class="line">        length = <span class="built_in">len</span>(msg)</span><br><span class="line">        default_length = <span class="number">128</span></span><br><span class="line">        <span class="comment"># 私钥解密</span></span><br><span class="line">        priobj = Cipher_pkcs1_v1_5.new(RSA.importKey(self.rsa_private_key))</span><br><span class="line">        <span class="comment"># 长度不用分段</span></span><br><span class="line">        <span class="keyword">if</span> length &lt; default_length:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">b&#x27;&#x27;</span>.join(priobj.decrypt(msg, <span class="string">b&#x27;xyz&#x27;</span>))</span><br><span class="line">        <span class="comment"># 需要分段</span></span><br><span class="line">        offset = <span class="number">0</span></span><br><span class="line">        res = []</span><br><span class="line">        <span class="keyword">while</span> length - offset &gt; <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">if</span> length - offset &gt; default_length:</span><br><span class="line">                res.append(priobj.decrypt(msg[offset:offset + default_length], <span class="string">b&#x27;xyz&#x27;</span>))</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                res.append(priobj.decrypt(msg[offset:], <span class="string">b&#x27;xyz&#x27;</span>))</span><br><span class="line">            offset += default_length</span><br><span class="line">        <span class="keyword">return</span> <span class="string">b&#x27;&#x27;</span>.join(res).decode(<span class="string">&#x27;utf8&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="mitmproxyserver-py"><a href="#mitmproxyserver-py" class="headerlink" title="mitmproxyserver.py"></a>mitmproxyserver.py</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> mitmproxy <span class="keyword">import</span> http, ctx</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> randompoint <span class="keyword">import</span> RouteProcessor</span><br><span class="line"><span class="keyword">from</span> rsautils <span class="keyword">import</span> RsaUtils</span><br><span class="line"></span><br><span class="line">target_host = <span class="string">&quot;app.xtotoro.com&quot;</span></span><br><span class="line">api = [</span><br><span class="line">    <span class="string">&quot;https://app.xtotoro.com/app/platform/serverlist/getAppSlogan&quot;</span>,</span><br><span class="line">    <span class="string">&quot;https://app.xtotoro.com/app/platform/serverlist/getAppNotice&quot;</span>,</span><br><span class="line">    <span class="string">&quot;https://app.xtotoro.com/app/platform/recrecord/sunRunExercises&quot;</span>,</span><br><span class="line">    <span class="string">&quot;https://app.xtotoro.com/app/platform/recrecord/sunRunExercisesDetail&quot;</span></span><br><span class="line">]</span><br><span class="line">point_list = [</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468195&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.580518&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468286&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.580628&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468388&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.58066&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468704&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.580655&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.46886&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.580655&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468972&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.580477&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468967&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.580153&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468967&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.579732&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468951&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.579673&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468828&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.579618&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468645&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.579563&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.46849&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.579545&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468313&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.579563&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468211&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.5796&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468152&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.579828&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;longitude&quot;</span>: <span class="string">&quot;120.468184&quot;</span>, <span class="string">&quot;latitude&quot;</span>: <span class="string">&quot;31.580527&quot;</span>&#125;]</span><br><span class="line"></span><br><span class="line">rsa = RsaUtils()</span><br><span class="line"><span class="keyword">global</span> scantronId</span><br><span class="line"></span><br><span class="line">route_processor = RouteProcessor()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Counter</span>:</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">request</span>(<span class="params">self, flow: http.HTTPFlow</span>):</span><br><span class="line">        <span class="keyword">if</span> flow.request.url <span class="keyword">in</span> api <span class="keyword">and</span> flow.request.url != api[<span class="number">3</span>]:</span><br><span class="line">            ctx.log.info(<span class="string">&quot;Request URL:&#123;&#125;&quot;</span>.<span class="built_in">format</span>(flow.request.url))</span><br><span class="line">            ctx.log.info(<span class="string">&quot;Modified request:&#123;&#125;&quot;</span>.<span class="built_in">format</span>(rsa.long_decrypt(flow.request.text)))</span><br><span class="line">        <span class="keyword">if</span> flow.request.url == api[<span class="number">2</span>]:</span><br><span class="line">            json_request = json.loads(rsa.long_decrypt(flow.request.text))</span><br><span class="line">            json_request[<span class="string">&quot;km&quot;</span>] = <span class="string">&quot;2.12&quot;</span></span><br><span class="line">            json_request[<span class="string">&quot;fitDegree&quot;</span>] = <span class="string">&quot;1&quot;</span></span><br><span class="line">            replaced_text = json.dumps(json_request)</span><br><span class="line">            encrypt_text = rsa.long_encrypt(replaced_text)</span><br><span class="line">            flow.request.set_text(encrypt_text.decode(<span class="string">&#x27;utf-8&#x27;</span>))</span><br><span class="line">        <span class="keyword">if</span> flow.request.url == api[<span class="number">3</span>]:</span><br><span class="line">            json_request = json.loads(flow.request.text)</span><br><span class="line">            new_point_list = route_processor.process_points(point_list)</span><br><span class="line">            json_request[<span class="string">&quot;pointList&quot;</span>] = new_point_list</span><br><span class="line">            <span class="keyword">global</span> scantronId</span><br><span class="line">            json_request[<span class="string">&quot;scantronId&quot;</span>] = scantronId</span><br><span class="line">            replaced_text = json.dumps(json_request)</span><br><span class="line">            flow.request.set_text(replaced_text)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">response</span>(<span class="params">self, flow: http.HTTPFlow</span>):</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> flow.request.url == api[<span class="number">0</span>]:</span><br><span class="line">            json_response = json.loads(flow.response.text)</span><br><span class="line">            json_response[<span class="string">&quot;content&quot;</span>] = <span class="string">&quot;龙猫已劫持&quot;</span></span><br><span class="line">            replaced_text = json.dumps(json_response)</span><br><span class="line">            flow.response.set_text(replaced_text)</span><br><span class="line">        <span class="keyword">if</span> flow.request.url == api[<span class="number">1</span>]:</span><br><span class="line">            json_response = json.loads(flow.response.text)</span><br><span class="line">            app_notice_list = json_response[<span class="string">&quot;appNoticeVoList&quot;</span>]</span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> app_notice_list:</span><br><span class="line">                i[<span class="string">&quot;title&quot;</span>] = <span class="string">&quot;114514&quot;</span></span><br><span class="line">                i[<span class="string">&quot;alert&quot;</span>] = <span class="string">&quot;114514&quot;</span></span><br><span class="line">            replaced_text = json.dumps(json_response)</span><br><span class="line">            flow.response.set_text(replaced_text)</span><br><span class="line">        <span class="keyword">if</span> flow.request.url == api[<span class="number">2</span>]:</span><br><span class="line">            <span class="keyword">global</span> scantronId</span><br><span class="line">            json_response = json.loads(flow.response.text)</span><br><span class="line">            scantronId = json_response[<span class="string">&quot;scantronId&quot;</span>]</span><br><span class="line">            ctx.log.info(<span class="string">&quot;跑步完成!!!!!!!&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">addons = [</span><br><span class="line">    Counter()</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<h3 id="randompoint-py"><a href="#randompoint-py" class="headerlink" title="randompoint.py"></a>randompoint.py</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">from</span> haversine <span class="keyword">import</span> haversine, Unit</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RouteProcessor</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, min_offset=<span class="number">0.00002921</span>, max_offset=<span class="number">0.00004039</span>, max_distance=<span class="number">20</span></span>):</span><br><span class="line">        self.min_offset = min_offset</span><br><span class="line">        self.max_offset = max_offset</span><br><span class="line">        self.max_distance = max_distance</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">random_offset</span>(<span class="params">self, point</span>):</span><br><span class="line">        offset_range = self.max_offset - self.min_offset</span><br><span class="line">        longitude_offset = random.uniform(-offset_range, offset_range) + self.min_offset</span><br><span class="line">        latitude_offset = random.uniform(-offset_range, offset_range) + self.min_offset</span><br><span class="line">        new_point = &#123;</span><br><span class="line">            <span class="string">&quot;longitude&quot;</span>: <span class="built_in">float</span>(point[<span class="string">&quot;longitude&quot;</span>]) + longitude_offset,</span><br><span class="line">            <span class="string">&quot;latitude&quot;</span>: <span class="built_in">float</span>(point[<span class="string">&quot;latitude&quot;</span>]) + latitude_offset</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> new_point</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">average_point</span>(<span class="params">self, point1, point2</span>):</span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">            <span class="string">&quot;longitude&quot;</span>: (<span class="built_in">float</span>(point1[<span class="string">&quot;longitude&quot;</span>]) + <span class="built_in">float</span>(point2[<span class="string">&quot;longitude&quot;</span>])) / <span class="number">2</span>,</span><br><span class="line">            <span class="string">&quot;latitude&quot;</span>: (<span class="built_in">float</span>(point1[<span class="string">&quot;latitude&quot;</span>]) + <span class="built_in">float</span>(point2[<span class="string">&quot;latitude&quot;</span>])) / <span class="number">2</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">process_single_list</span>(<span class="params">self, point_list</span>):</span><br><span class="line">        new_point_list = []</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 对路径点进行随机浮动</span></span><br><span class="line">        <span class="keyword">for</span> point <span class="keyword">in</span> point_list:</span><br><span class="line">            new_point_list.append(self.random_offset(point))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 在两个相邻路径点之间插入新路径点</span></span><br><span class="line">        i = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> i &lt; <span class="built_in">len</span>(new_point_list) - <span class="number">1</span>:</span><br><span class="line">            current_point = new_point_list[i]</span><br><span class="line">            next_point = new_point_list[i + <span class="number">1</span>]</span><br><span class="line">            distance = haversine((current_point[<span class="string">&#x27;latitude&#x27;</span>], current_point[<span class="string">&#x27;longitude&#x27;</span>]),</span><br><span class="line">                                 (next_point[<span class="string">&#x27;latitude&#x27;</span>], next_point[<span class="string">&#x27;longitude&#x27;</span>]), unit=Unit.METERS)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> distance &gt; self.max_distance:</span><br><span class="line">                mid_point = self.average_point(current_point, next_point)</span><br><span class="line">                new_point_list.insert(i + <span class="number">1</span>, mid_point)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                i += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> new_point_list</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">process_points</span>(<span class="params">self, point_list</span>):</span><br><span class="line">        <span class="comment"># 处理原始路径点</span></span><br><span class="line">        new_point_list = self.process_single_list(point_list)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 复制路径点并对复制的路径点进行处理</span></span><br><span class="line">        copied_point_list = self.process_single_list(point_list)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 将处理后的复制路径点添加到末尾</span></span><br><span class="line">        new_point_list.extend(copied_point_list)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> new_point_list</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>MengTL
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://example.com/posts/58238/" title="某猫校园代理检测绕过与劫持">http://example.com/posts/58238/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%80%8F%E6%98%8E%E4%BB%A3%E7%90%86/" rel="tag"># 透明代理</a>
+              <a href="/tags/APP/" rel="tag"># APP</a>
+          </div>
+
+        
+
+
+        
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B5%B7%E5%9B%A0"><span class="nav-number">1.</span> <span class="nav-text">起因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#rsautils-py"><span class="nav-number">3.1.</span> <span class="nav-text">rsautils.py</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mitmproxyserver-py"><span class="nav-number">3.2.</span> <span class="nav-text">mitmproxyserver.py</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#randompoint-py"><span class="nav-number">3.3.</span> <span class="nav-text">randompoint.py</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="MengTL"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">MengTL</p>
+  <div class="site-description" itemprop="description">总有人间一两风，填我十万八千梦</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+<!-- recent posts -->
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">MengTL</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
